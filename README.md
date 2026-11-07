@@ -115,8 +115,12 @@ column-header rows and ODS inline formatting are handled.
 | [diffdf](https://cran.r-project.org/package=diffdf), dataCompareR | compare two data frames |
 | **rtfqc** | read RTF outputs and QC them: cell-level comparison with the QC dataset, page / title / footnote checks |
 
-`rtf_compare()` also accepts a data frame, so a table read with
-`artful::rtf_to_df()` can be compared with QC data as well.
+`rtf_compare()` also accepts a data frame, but pass the RTF path whenever you
+can. Tools that convert RTF through HTML (e.g. Pandoc, as `artful::rtf_to_df()`
+does) collapse repeated spaces inside a cell, so the alignment spaces in
+`28 ( 96.6)` are lost and every such cell is reported as `spacing`; they may
+also drop the last body row. rtfqc reads the RTF itself and keeps the cell
+text exactly as written, because those spaces are part of the layout.
 
 ## Limitations
 
