@@ -1,6 +1,6 @@
 demo <- system.file("extdata", "demo.rtf", package = "rtfqc")
 qc_ok <- data.frame(
-  COL1 = c("Age (years)", "n", "Mean (SD)", "Sex, n (%)", "Female", "Male", "Café ≥ 65"),
+  COL1 = c("Age (years)", "  n", "  Mean (SD)", "Sex, n (%)", "  Female", "  Male", "Café ≥ 65"),
   COL2 = c("", "30", "45.2 (10.1)", "", "16 (51.6)", "15 (48.4)", "2 (6.5)"),
   COL3 = c("", "31", "47.0 (9.80)", "", "15 (46.9)", "17 (53.1)", "3 (9.4)"),
   stringsAsFactors = FALSE
@@ -8,7 +8,10 @@ qc_ok <- data.frame(
 
 test_that("cell classification", {
   expect_equal(rtf_cell_diff("12 (40.0)", "12 (40.0)"), "")
-  expect_equal(rtf_cell_diff("  12 (40.0) ", "12 (40.0)"), "")        # leading / trailing spaces ignored
+  expect_equal(rtf_cell_diff("12 (40.0)  ", "12 (40.0)"), "")         # trailing spaces ignored
+  expect_equal(rtf_cell_diff("  Female", "Female"), "spacing")        # indentation must match
+  expect_equal(rtf_cell_diff(" 29", "29"), "spacing")                 # number alignment must match
+  expect_equal(rtf_cell_diff("  48/\nMale", "48/\nMale"), "spacing")  # also when the cell wraps
   expect_equal(rtf_cell_diff("12  (40.0)", "12 (40.0)"), "spacing")   # inner spaces must match
   expect_equal(rtf_cell_diff("9(31.0)", "9 ( 31.0)"), "spacing")
   expect_equal(rtf_cell_diff("12(40.0)", "12 (40.0)"), "spacing")
@@ -86,4 +89,25 @@ test_that("listing rows with left-out repeated values align correctly", {
   expect_equal(nrow(d), 1)
   expect_equal(d$rtf_row, 3)
   expect_equal(d$column, 4)
+})
+
+test_that("indentation written as RTF paragraph indent (\\li) is compared", {
+  f <- tempfile(fileext = ".rtf")
+  # every cell has \\li115 of padding; the indented rows have \\li475
+  cell <- function(txt, li) sprintf("\\pard\\intbl\\li%d\\ql %s\\cell", li, txt)
+  row <- function(...) paste0("\\trowd\\cellx3000\\cellx5000\n", ..., "\\row\n")
+  writeLines(paste0("{\\rtf1\\ansi\n",
+    row(cell("Sex, n (%)", 115), cell("", 115)),
+    row(cell("Female", 475), cell("16 (51.6)", 115)),
+    row(cell("Male", 475), cell("15 (48.4)", 115)), "}"), f)
+  doc <- rtf_read(f)
+  expect_equal(doc$rows$indent[[2]], c(475L, 115L))
+  qc <- data.frame(COL1 = c("Sex, n (%)", "  Female", "  Male"), COL2 = c("", "16 (51.6)", "15 (48.4)"))
+  res <- rtf_compare(f, qc)
+  expect_equal(unname(res$count["same"]), 3L)
+  qc$COL1[3] <- "Male"                     # not indented in QC
+  d <- as.data.frame(rtf_compare(f, qc))
+  expect_equal(d$status, "spacing")
+  expect_equal(d$rtf, "  Male")
+  expect_equal(d$qc, "Male")
 })

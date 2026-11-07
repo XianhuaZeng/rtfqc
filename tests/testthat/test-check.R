@@ -35,7 +35,7 @@ test_that("folder mode pairs RTF with v_ datasets", {
   d <- tempfile(); dir.create(d)
   file.copy(demo, file.path(d, "t_demo.rtf"))
   q <- tempfile(); dir.create(q)
-  qc <- data.frame(COL1 = c("Age (years)", "n"), COL2 = c("", "30"), COL3 = c("", "31"))
+  qc <- data.frame(COL1 = c("Age (years)", "  n"), COL2 = c("", "30"), COL3 = c("", "31"))
   utils::write.csv(qc, file.path(q, "v_t_demo.csv"), row.names = FALSE)
   res <- rtf_qc_dir(d, q, ext = "csv")
   expect_equal(nrow(res), 1)

@@ -13,9 +13,10 @@ rtf_cell_diff(a, b, min_trunc = 8L)
 reported as truncation rather than a value difference.}
 }
 \value{
-Character vector: `""` (same; leading / trailing white space and
-  line breaks inside the cell are ignored), `"spacing"` (only the spaces
-  inside the text differ, e.g. `9(31.0)` vs `9 ( 31.0)`), `"truncated"` (one text is a prefix of the other), `"format"`
+Character vector: `""` (same; trailing white space and line breaks
+  inside the cell are ignored), `"spacing"` (only the spaces differ: inside
+  the text, e.g. `9(31.0)` vs `9 ( 31.0)`, or leading spaces / indentation,
+  e.g. `"  n"` vs `"n"`), `"truncated"` (one text is a prefix of the other), `"format"`
   (same numbers written differently, e.g. `5` vs `5.0`), `"rounding"` (the
   numbers differ by at most one unit in the last decimal shown; whole
   numbers such as counts never count as rounding) or `"diff"`.

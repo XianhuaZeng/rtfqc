@@ -12,9 +12,10 @@
 #' @param a,b Cell texts (RTF and QC). Vectorised.
 #' @param min_trunc Shortest common prefix (characters) for a difference to be
 #'   reported as truncation rather than a value difference.
-#' @return Character vector: `""` (same; leading / trailing white space and
-#'   line breaks inside the cell are ignored), `"spacing"` (only the spaces
-#'   inside the text differ, e.g. `9(31.0)` vs `9 ( 31.0)`), `"truncated"` (one text is a prefix of the other), `"format"`
+#' @return Character vector: `""` (same; trailing white space and line breaks
+#'   inside the cell are ignored), `"spacing"` (only the spaces differ: inside
+#'   the text, e.g. `9(31.0)` vs `9 ( 31.0)`, or leading spaces / indentation,
+#'   e.g. `"  n"` vs `"n"`), `"truncated"` (one text is a prefix of the other), `"format"`
 #'   (same numbers written differently, e.g. `5` vs `5.0`), `"rounding"` (the
 #'   numbers differ by at most one unit in the last decimal shown; whole
 #'   numbers such as counts never count as rounding) or `"diff"`.
@@ -23,7 +24,8 @@
 #'               c("12 (40.0)", "12 (40.00)", "3.45", "Headache and migraine"))
 #' @export
 rtf_cell_diff <- function(a, b, min_trunc = 8L) {
-  # only leading / trailing white space is ignored; spaces inside a cell must match
+  # only trailing white space is ignored (SAS pads character values); leading spaces
+  # (indentation, number alignment) and spaces inside a cell must match
   a <- .strict(ifelse(is.na(a), "", as.character(a)))
   b <- .strict(ifelse(is.na(b), "", as.character(b)))
   n <- max(length(a), length(b))
@@ -33,11 +35,13 @@ rtf_cell_diff <- function(a, b, min_trunc = 8L) {
   out
 }
 
-.strict <- function(x) trimws(gsub("\u00a0", " ", x, fixed = TRUE))
+.strict <- function(x) sub("\\s+$", "", gsub("\u00a0", " ", x, fixed = TRUE))
+.lead <- function(x) nchar(x) - nchar(sub("^ +", "", x))
 
 .cell_diff1 <- function(x, y, min_trunc = 8L) {
   if (identical(x, y)) return("")
   if (identical(gsub("\\s", "", x), gsub("\\s", "", y))) {
+    if (.lead(x) != .lead(y)) return("spacing")   # indentation / alignment differs
     # a line break (RTF \\line / \\par, ODS @n / @w) is where the text wraps in the
     # cell, not a real character: differences around it do not count
     if (grepl("\n", x, fixed = TRUE) || grepl("\n", y, fixed = TRUE)) return("")
@@ -121,14 +125,46 @@ rtf_cell_diff <- function(a, b, min_trunc = 8L) {
   if (inherits(rtf, "rtf_doc")) {
     r <- rtf$rows[!rtf$rows$header, , drop = FALSE]
     rows <- r$cells; page <- r$page
+    ind <- if ("indent" %in% names(r)) r$indent else NULL
   } else if (is.data.frame(rtf)) {
     # e.g. rtf_table() or artful::rtf_to_df() output
     df <- rtf[, setdiff(names(rtf), c(".page", "indent")), drop = FALSE]
     page <- if (".page" %in% names(rtf)) rtf$.page else rep(NA_integer_, nrow(rtf))
     rows <- lapply(seq_len(nrow(df)), function(i) { v <- as.character(unlist(df[i, ], use.names = FALSE)); v[is.na(v)] <- ""; v })
+    ind <- NULL
   } else stop("`rtf` must be an RTF path, an rtf_doc or a data frame.", call. = FALSE)
   keep <- vapply(rows, function(cc) any(nzchar(.norm(cc))), TRUE)
-  list(rows = rows[keep], page = page[keep])
+  list(rows = rows[keep], page = page[keep], ind = if (!is.null(ind)) ind[keep] else NULL)
+}
+
+# Indentation written as RTF paragraph indent (\\li) instead of leading spaces is turned
+# into leading spaces, so it can be compared with the QC text. Per column, the smallest
+# indent is cell padding (the baseline); each larger indent level is matched by rank to
+# the leading-space counts the QC uses in that column (if the number of levels differs,
+# by the ratio of the first level; with no indented QC cells, 2 spaces per level).
+.apply_li <- function(rows, ind, qm) {
+  if (is.null(ind) || !length(rows)) return(rows)
+  w <- max(lengths(rows))
+  for (j in seq_len(w)) {
+    tw <- vapply(seq_along(rows), function(i) {
+      if (j <= length(rows[[i]]) && j <= length(ind[[i]]) && nzchar(trimws(rows[[i]][j]))) as.integer(ind[[i]][j]) else NA_integer_
+    }, 0L)
+    ok <- !is.na(tw)
+    if (!any(ok)) next
+    d <- tw - min(tw[ok])
+    lev <- sort(unique(d[ok & d > 0]))
+    if (!length(lev)) next
+    qs <- integer(0)
+    if (j <= ncol(qm)) {
+      v <- qm[, j]; v <- v[nzchar(trimws(v))]
+      n <- .lead(v); qs <- sort(unique(n[n > 0]))
+    }
+    sp <- if (length(qs) == length(lev)) qs
+      else if (length(qs)) pmax(1L, as.integer(round(lev / (lev[1] / qs[1]))))
+      else 2L * seq_along(lev)
+    for (i in which(ok & d > 0)) rows[[i]][j] <- paste0(strrep(" ", sp[match(d[i], lev)]), rows[[i]][j])
+  }
+  rows
 }
 
 # Longest common subsequence on a logical match matrix H (n x m): matched (i, j) pairs
@@ -239,7 +275,7 @@ rtf_compare <- function(rtf, qc, qc_cols = NULL) {
   src <- if (is.character(rtf) && length(rtf) == 1) rtf else NA_character_
   R <- .rtf_side(rtf)
   Q <- .qc_matrix(.read_qc(qc), qc_cols)
-  R$rows <- .fill_down(R$rows)
+  R$rows <- .fill_down(.apply_li(R$rows, R$ind, Q$m))
   QB <- .fill_down(lapply(seq_len(nrow(Q$m)), function(k) unname(Q$m[k, ])))
   P <- .align(R$rows, QB)
 
@@ -318,6 +354,9 @@ print.rtf_compare <- function(x, n = 10, ...) {
   invisible(x)
 }
 
+# cell text for display: line breaks shown as spaces, leading / inner spaces kept
+.show <- function(x) sub("\\s+$", "", gsub("\n", " ", gsub("\u00a0", " ", x, fixed = TRUE), fixed = TRUE))
+
 #' @export
 as.data.frame.rtf_compare <- function(x, row.names = NULL, optional = FALSE, ...) {
   out <- lapply(x$rows, function(r) {
@@ -330,7 +369,7 @@ as.data.frame.rtf_compare <- function(x, row.names = NULL, optional = FALSE, ...
     k <- which(r$cells %in% c("diff", "truncated", "rounding", "format", "spacing"))
     if (!length(k)) return(NULL)
     data.frame(status = r$cells[k], page = r$page, rtf_row = r$rtf_row, qc_row = r$qc_row,
-      column = k, label = unname(.norm(r$rtf[1])), rtf = unname(.norm(r$rtf[k])), qc = unname(.norm(r$qc[k])),
+      column = k, label = unname(.norm(r$rtf[1])), rtf = unname(.show(r$rtf[k])), qc = unname(.show(r$qc[k])),
       stringsAsFactors = FALSE, row.names = NULL)
   })
   out <- do.call(rbind, out)

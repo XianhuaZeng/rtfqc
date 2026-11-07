@@ -1,3 +1,15 @@
+# rtfqc 0.1.13
+
+* Leading spaces must now match as well: indentation (`  Female` vs `Female`)
+  and number alignment (` 29` vs `29`) are reported as `spacing`. Only trailing
+  spaces (SAS pads character values) and line breaks inside a cell are ignored.
+* Indentation written as RTF paragraph indent (`\li` / `\fi`) instead of
+  leading spaces is recognised: per column, each indent level is converted to
+  the leading-space count the QC dataset uses for that level. `rtf_read()`
+  returns the indent of every cell in the new `rows$indent` column.
+* `as.data.frame()` of an `rtf_compare` keeps the spaces in the `rtf` / `qc`
+  cell text, so spacing differences are visible.
+
 # rtfqc 0.1.12
 
 * Spaces inside a cell must now match: `9(31.0)` vs `9 ( 31.0)` is reported as

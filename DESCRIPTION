@@ -1,6 +1,6 @@
 Package: rtfqc
 Title: Read Clinical RTF Outputs and Check Them Against QC Data
-Version: 0.1.12
+Version: 0.1.13
 Authors@R:
     c(person("Xianhua", "Zeng", role = c("aut", "cre"), email = "huazizeng@gmail.com"),
       person("Claude", role = "aut"))

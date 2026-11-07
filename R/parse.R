@@ -53,6 +53,9 @@
 
   # state
   stack_skip <- logical(0); stack_hf <- logical(0); stack_uc <- integer(0)
+  # paragraph indent (\\li left indent, \\fi first-line indent, in twips): some
+  # programs indent with it instead of leading spaces
+  stack_li <- integer(0); stack_fi <- integer(0); li <- 0L; fi <- 0L
   skip <- FALSE; hf <- FALSE; uc <- 1L; pend <- 0L; first <- FALSE
   bytes <- integer(0)
   # PAGE / NUMPAGES fields: Word fills the numbers in when it opens the file, so the
@@ -62,6 +65,7 @@
   heads <- list(character(0)); bodies <- list(character(0)); pg <- 1L
   row_cells <- list(); row_page <- integer(0); row_hdr <- logical(0)
   cells <- character(0); cell <- character(0); hdr <- FALSE
+  row_ind <- list(); inds <- integer(0)
 
   decode <- function(b) {
     s <- rawToChar(as.raw(b))
@@ -107,6 +111,7 @@
     if (c1 == "{") {
       flush()
       stack_skip <- c(stack_skip, skip); stack_hf <- c(stack_hf, hf); stack_uc <- c(stack_uc, uc)
+      stack_li <- c(stack_li, li); stack_fi <- c(stack_fi, fi)
       first <- TRUE
       next
     }
@@ -115,7 +120,9 @@
       k <- length(stack_skip)
       if (k) {
         skip <- stack_skip[k]; hf <- stack_hf[k]; uc <- stack_uc[k]
+        li <- stack_li[k]; fi <- stack_fi[k]
         stack_skip <- stack_skip[-k]; stack_hf <- stack_hf[-k]; stack_uc <- stack_uc[-k]
+        stack_li <- stack_li[-k]; stack_fi <- stack_fi[-k]
       }
       if (fldcap && length(stack_skip) < fld_depth) {
         fldcap <- FALSE
@@ -150,6 +157,9 @@
     }
     if (w == "uc" && nzchar(num)) { uc <- as.integer(num); next }
     if (skip) next
+    if (w == "pard") { li <- 0L; fi <- 0L; next }
+    if (w %in% c("li", "lin") && nzchar(num)) { li <- as.integer(num); next }
+    if (w == "fi" && nzchar(num)) { fi <- as.integer(num); next }
     if (!hf) {
       if (w == "trowd") {
         # text before a row starts (titles in the body) is not part of its first cell;
@@ -161,14 +171,16 @@
       if (w == "trhdr") { hdr <- TRUE; next }
       if (w == "cell") {
         cells <- c(cells, paste(cell, collapse = "")); cell <- character(0)
+        inds <- c(inds, max(0L, li + fi))
         bodies[[pg]] <- c(bodies[[pg]], " "); next
       }
       if (w == "row") {
         if (length(cells)) {
           row_cells[[length(row_cells) + 1L]] <- sub("\\s+$", "", gsub("\u00a0", " ", cells, fixed = TRUE))
           row_page <- c(row_page, pg); row_hdr <- c(row_hdr, hdr)
+          row_ind[[length(row_ind) + 1L]] <- inds
         }
-        cells <- character(0); cell <- character(0)
+        cells <- character(0); cell <- character(0); inds <- integer(0)
         bodies[[pg]] <- c(bodies[[pg]], " "); next
       }
       if (w %in% c("page", "sect")) { new_page(); next }
@@ -190,7 +202,7 @@
   if (n > 1 && !nzchar(head[n]) && !nzchar(body[n])) { head <- head[-n]; body <- body[-n] }
   list(
     pages = data.frame(page = seq_along(head), head = head, body = body, stringsAsFactors = FALSE),
-    rows = row_cells, row_page = row_page, row_hdr = row_hdr
+    rows = row_cells, row_page = row_page, row_hdr = row_hdr, row_ind = row_ind
   )
 }
 
@@ -206,7 +218,9 @@
 #'     footer text, which is where SAS ODS RTF and r2rtf put titles and
 #'     "Page x of y"), `body` (all body text);
 #'   * `rows`: data frame of body table rows: `page`, `row`, `header` (`TRUE`
-#'     for repeated column-header rows, RTF `\\trhdr`) and `cells` (list column).
+#'     for repeated column-header rows, RTF `\\trhdr`), `cells` (list column)
+#'     and `indent` (list column: paragraph indent of each cell in twips,
+#'     RTF `\\li` + `\\fi`).
 #' @examples
 #' f <- system.file("extdata", "demo.rtf", package = "rtfqc")
 #' doc <- rtf_read(f)
@@ -219,6 +233,7 @@ rtf_read <- function(file) {
     stringsAsFactors = FALSE
   )
   rows$cells <- w$rows
+  rows$indent <- w$row_ind
   structure(list(file = file, pages = w$pages, rows = rows), class = "rtf_doc")
 }
 

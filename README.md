@@ -27,9 +27,12 @@ cell, so you see every difference — and only real differences.
   | `truncated` | `Headache and migr` vs `Headache and migraine` |
   | `rounding` | `51.6` vs `51.7` (last decimal shown; never for counts) |
   | `format` | `20.70` vs `20.7` (same number, different format) |
-  | `spacing` | `9(31.0)` vs `9 ( 31.0)` (spaces inside the text) |
+  | `spacing` | `9(31.0)` vs `9 ( 31.0)`, `  Female` vs `Female` (spaces inside the text, leading spaces / indentation) |
 
-  Leading / trailing spaces and line breaks inside a cell are ignored.
+  Spaces are part of the layout (number alignment, SOC / PT indentation), so
+  leading and inner spaces must match. Indentation written as RTF paragraph
+  indent (`\li`) instead of spaces is converted to the QC's leading spaces
+  level by level. Trailing spaces and line breaks inside a cell are ignored.
 
 * **Robust row alignment.** Identical rows are matched first, then rows with
   the same label, then the rest in order — so one extra or missing row does

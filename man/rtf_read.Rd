@@ -16,7 +16,9 @@ An object of class `rtf_doc`: a list with
     footer text, which is where SAS ODS RTF and r2rtf put titles and
     "Page x of y"), `body` (all body text);
   * `rows`: data frame of body table rows: `page`, `row`, `header` (`TRUE`
-    for repeated column-header rows, RTF `\\trhdr`) and `cells` (list column).
+    for repeated column-header rows, RTF `\\trhdr`), `cells` (list column)
+    and `indent` (list column: paragraph indent of each cell in twips,
+    RTF `\\li` + `\\fi`).
 }
 \description{
 Parses a clinical RTF table, listing or figure file into pages and table
