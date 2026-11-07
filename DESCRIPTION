@@ -1,0 +1,30 @@
+Package: rtfqc
+Title: Read Clinical RTF Outputs and Check Them Against QC Data
+Version: 0.1.12
+Authors@R:
+    c(person("Xianhua", "Zeng", role = c("aut", "cre"), email = "huazizeng@gmail.com"),
+      person("Claude", role = "aut"))
+Description: Reads RTF tables, listings and figures produced for clinical
+    study reports (for example by SAS ODS RTF or r2rtf) directly, without
+    Word, LibreOffice or Pandoc. Splits them into pages with titles,
+    headers, table body and footnotes, rebuilds the body table as a data
+    frame, and compares it cell by cell with an independently programmed
+    QC dataset, classifying each difference as a value difference,
+    truncation, rounding, number format or spacing. Also checks
+    "Page x of y" numbering, blank pages, and titles and footnotes
+    against a table of contents. Works on single files or whole folders.
+License: GPL (>= 3)
+Encoding: UTF-8
+Language: en-US
+Depends: R (>= 4.1.0)
+Imports:
+    utils
+Suggests:
+    haven,
+    openxlsx2,
+    readxl,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+URL: https://github.com/XianhuaZeng/rtfqc
+BugReports: https://github.com/XianhuaZeng/rtfqc/issues
+Config/roxygen2/version: 8.0.0

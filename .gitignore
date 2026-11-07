@@ -1,0 +1,18 @@
+# R / RStudio
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+# build output
+*.tar.gz
+rtfqc.Rcheck/
+docs/
+# local test files with real study data: never commit
+testcases/
+*.sas7bdat
+*.xpt
+!inst/extdata/*.xpt
+# OS
+.DS_Store
+Thumbs.db

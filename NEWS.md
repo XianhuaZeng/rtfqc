@@ -1,0 +1,44 @@
+# rtfqc 0.1.12
+
+* Spaces inside a cell must now match: `9(31.0)` vs `9 ( 31.0)` is reported as
+  `spacing`. Leading / trailing spaces and line breaks inside a cell (RTF
+  `\line`, ODS `@n` / `@w`) are still ignored.
+
+# rtfqc 0.1.11
+
+First public version.
+
+## Reading RTF outputs
+* `rtf_read()` reads RTF files directly (no Word, LibreOffice or Pandoc):
+  pages, header/footer text, body text and body table rows, with repeated
+  column-header rows (`\trhdr`) flagged.
+* Code pages are detected from `\ansicpg` (e.g. GBK for Chinese outputs);
+  `\uN` Unicode characters are decoded.
+* Word PAGE / NUMPAGES fields are kept as `{PAGE}` / `{NUMPAGES}` placeholders.
+* `rtf_table()` rebuilds the body table as a data frame (`COL1`, `COL2`, ...)
+  across pages, optionally with the indentation level.
+
+## Comparing with QC data
+* `rtf_compare()` compares an RTF output with its QC dataset (data frame,
+  `.sas7bdat`, `.xpt`, `.rds` or `.csv`) cell by cell and classifies each
+  difference: `diff`, `truncated`, `rounding`, `format`, or white space only
+  (not reported). Whole numbers that differ (counts) are never "rounding".
+* Rows are aligned in three steps (identical rows, then row labels, then in
+  order), so an extra or missing row does not shift the rows after it.
+* Leading cells that a listing leaves empty because they repeat the row above
+  are filled in on both sides before comparing.
+* SAS ODS inline formatting in QC text (`@{super 1}`, `^{sub 2}`, `@n`, `@w`,
+  `(*ESC*){unicode 03B1}`, ...) is resolved to what the RTF shows.
+* `rtf_compare()` also accepts a data frame, e.g. from `artful::rtf_to_df()`.
+
+## Checks
+* `rtf_check_pages()`: "Page x of y" text or PAGE / NUMPAGES fields on every
+  page, numbering, blank pages, files without any page number.
+* `rtf_check_titles()`: titles and footnotes against expected text or a TOC.
+* `rtf_check()` runs all checks, optionally with the QC comparison.
+
+## Folders and reports
+* `rtf_qc_dir()` pairs `x.rtf` with `v_x.sas7bdat` in a folder and returns one
+  summary row per output; cell-level details are in `attr(x, "details")`.
+* `rtf_compare_report()` writes an Excel report (Summary + Differences sheets)
+  or CSV.
