@@ -13,6 +13,7 @@ testcases/
 *.sas7bdat
 *.xpt
 !inst/extdata/*.xpt
+!inst/extdata/*.sas7bdat
 # OS
 .DS_Store
 Thumbs.db
