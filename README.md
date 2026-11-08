@@ -23,7 +23,7 @@ cell, so you see every difference — and only real differences.
 
   | Class | Example (RTF vs QC) |
   |---|---|
-  | `diff` | `30` vs `29`, `thema` vs `themselves` |
+  | `diff` | `30` vs `29`, `consnt` vs `consent` |
   | `truncated` | `Headache and migr` vs `Headache and migraine` |
   | `rounding` | `51.6` vs `51.7` (last decimal shown; never for counts) |
   | `format` | `20.70` vs `20.7` (same number, different format) |
@@ -63,15 +63,23 @@ Excel reports need [openxlsx2](https://janmarvin.github.io/openxlsx2/).
 ```r
 library(rtfqc)
 
-res <- rtf_compare("t_14_1_1_1.rtf", "v_t_14_1_1_1.sas7bdat")
+# example files shipped with the package (invented numbers)
+rtf <- system.file("extdata", "test.rtf", package = "rtfqc")
+qc  <- system.file("extdata", "v_test.sas7bdat", package = "rtfqc")
+res <- rtf_compare(rtf, qc)
 res
-#> <rtf_compare> t_14_1_1_1.rtf
-#>   RTF rows: 12   QC rows: 12   QC columns: COL1, COL2, COL3, COL4
-#>   rows: same 11 | only in RTF 0 | only in QC 0
-#>   cells: diff 1 | truncated 0 | rounding 0 | format 0
+#> <rtf_compare> test.rtf
+#>   RTF rows: 12   QC rows: 11   QC columns: COL1, COL2, COL3, COL4
+#>   rows: same 7 | only in RTF 1 | only in QC 0
+#>   cells: diff 1 | truncated 1 | rounding 1 | format 1 | spacing 1
 #>
-#>  status page rtf_row column label                    rtf        qc
-#>  diff   1     9      1      Withdraw from the study… …cts thema …cts themselves
+#>  status    page rtf_row column label                      rtf          qc
+#>  rounding  1     4       4     Safe dose administration    59 ( 98.3)   59 ( 98.4)
+#>  only_rtf  1     7      NA     Complete study              Complete st…
+#>  spacing   1     8       2     Withdrawal                  8 ( 26.7)    8(26.7)
+#>  diff      1     9       1     Subject withdrew consnt     …consnt      …consent
+#>  truncated 1    12       1     Other reasons not covere…   …determine…  …above
+#>  format    1    12       2     Other reasons not covere…   5 ( 16.70)   5 ( 16.7)
 
 as.data.frame(res)   # all differences with full text
 ```

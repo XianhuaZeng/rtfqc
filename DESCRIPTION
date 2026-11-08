@@ -1,6 +1,6 @@
 Package: rtfqc
 Title: Read Clinical RTF Outputs and Check Them Against QC Data
-Version: 0.1.14
+Version: 0.1.15
 Authors@R:
     person("Xianhua", "Zeng", role = c("aut", "cre"), email = "huazizeng@gmail.com")
 Description: Reads RTF (Rich Text Format) tables, listings and figures

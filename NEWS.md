@@ -1,3 +1,8 @@
+# rtfqc 0.1.15
+
+* The example files `inst/extdata/test.rtf` and `v_test.sas7bdat` now hold
+  invented numbers and generic withdrawal reasons only.
+
 # rtfqc 0.1.14
 
 * Preparing the first CRAN submission: examples for every exported function
