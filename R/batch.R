@@ -15,6 +15,14 @@
 #' @return A data frame with one row per RTF: counts of each difference type,
 #'   number of page / title issues, and an `error` column. The cell-level
 #'   differences of all outputs are in `attr(x, "details")`.
+#' @examples
+#' if (requireNamespace("haven", quietly = TRUE)) {
+#'   d <- system.file("extdata", package = "rtfqc")
+#'   # test.rtf is paired with v_test.sas7bdat in the same folder
+#'   r <- rtf_qc_dir(d, d, pattern = "^test\\.rtf$")
+#'   r
+#'   head(attr(r, "details"))
+#' }
 #' @export
 rtf_qc_dir <- function(main_dir, qc_dir, pattern = "\\.rtf$", prefix = "v_", ext = "sas7bdat", toc = NULL) {
   files <- list.files(main_dir, pattern = pattern, ignore.case = TRUE, full.names = TRUE)
@@ -58,6 +66,15 @@ rtf_qc_dir <- function(main_dir, qc_dir, pattern = "\\.rtf$", prefix = "v_", ext
 #' @param x An `rtf_compare` from [rtf_compare()] or the data frame from [rtf_qc_dir()].
 #' @param file Output path ending in `.xlsx` (needs openxlsx2) or `.csv`.
 #' @return `file`, invisibly.
+#' @examples
+#' f <- system.file("extdata", "demo.rtf", package = "rtfqc")
+#' qc <- data.frame(COL1 = c("Age (years)", "  n", "  Mean (SD)"),
+#'                  COL2 = c("", "29", "45.2 (10.1)"),
+#'                  COL3 = c("", "31", "47.0 (9.80)"))
+#' out <- tempfile(fileext = ".csv")
+#' rtf_compare_report(rtf_compare(f, qc), out)
+#' read.csv(out)
+#' unlink(out)
 #' @export
 rtf_compare_report <- function(x, file) {
   sheets <- if (inherits(x, "rtf_compare")) {

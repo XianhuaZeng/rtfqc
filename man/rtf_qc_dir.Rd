@@ -36,3 +36,12 @@ Pairs `<main_dir>/<name>.rtf` with `<qc_dir>/<prefix><name>.sas7bdat`
 (by default the common `v_` naming, e.g. `t_14_1_1.rtf` with
 `v_t_14_1_1.sas7bdat`), compares each pair and runs the page checks.
 }
+\examples{
+if (requireNamespace("haven", quietly = TRUE)) {
+  d <- system.file("extdata", package = "rtfqc")
+  # test.rtf is paired with v_test.sas7bdat in the same folder
+  r <- rtf_qc_dir(d, d, pattern = "^test\\\\.rtf$")
+  r
+  head(attr(r, "details"))
+}
+}

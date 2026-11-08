@@ -22,3 +22,8 @@ A data frame of character columns, plus `.page`.
 Rebuilds the body table across pages: repeated column-header rows are
 dropped (or used as column names) and empty rows are removed.
 }
+\examples{
+f <- system.file("extdata", "demo.rtf", package = "rtfqc")
+rtf_table(f)
+rtf_table(f, header = "auto", keep_indent = TRUE)
+}

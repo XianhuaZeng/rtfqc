@@ -29,3 +29,9 @@ comparison ignores case, spaces and punctuation, so line breaks and
 different dash characters do not count as differences. Footnotes are also
 checked to be the same on all pages.
 }
+\examples{
+f <- system.file("extdata", "demo.rtf", package = "rtfqc")
+rtf_check_titles(f,
+  titles = c("Table 14.1.1 Demographic Characteristics", "Safety Population"),
+  footnotes = c("Note: Percentages are based on N.", "Source: ADSL"))
+}

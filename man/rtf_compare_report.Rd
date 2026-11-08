@@ -17,3 +17,13 @@ rtf_compare_report(x, file)
 \description{
 Write a comparison report
 }
+\examples{
+f <- system.file("extdata", "demo.rtf", package = "rtfqc")
+qc <- data.frame(COL1 = c("Age (years)", "  n", "  Mean (SD)"),
+                 COL2 = c("", "29", "45.2 (10.1)"),
+                 COL3 = c("", "31", "47.0 (9.80)"))
+out <- tempfile(fileext = ".csv")
+rtf_compare_report(rtf_compare(f, qc), out)
+read.csv(out)
+unlink(out)
+}

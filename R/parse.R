@@ -257,6 +257,10 @@ print.rtf_doc <- function(x, ...) {
 #' @param keep_indent If `TRUE`, adds an `indent` column with the number of
 #'   leading spaces of the first column (useful for SOC / PT hierarchies).
 #' @return A data frame of character columns, plus `.page`.
+#' @examples
+#' f <- system.file("extdata", "demo.rtf", package = "rtfqc")
+#' rtf_table(f)
+#' rtf_table(f, header = "auto", keep_indent = TRUE)
 #' @export
 rtf_table <- function(x, header = c("none", "auto"), keep_indent = FALSE) {
   header <- match.arg(header)

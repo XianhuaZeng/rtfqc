@@ -29,3 +29,8 @@ A data frame of issues with columns `check`, `page`, `message`.
 \description{
 Run all checks on one RTF output
 }
+\examples{
+f <- system.file("extdata", "demo.rtf", package = "rtfqc")
+qc <- data.frame(COL1 = c("Age (years)", "  n"), COL2 = c("", "30"), COL3 = c("", "31"))
+rtf_check(f, qc = qc, titles = "Table 14.1.1 Demographic Characteristics")
+}

@@ -8,8 +8,8 @@
 #' Check page numbering and blank pages
 #'
 #' Looks for the page number in the header, footer and body of every page.
-#' It can be written as text ("Page x of y", "Page x/y" or Chinese
-#' the Chinese "di x ye gong y ye" form): then page k must say "Page k of n", where n is the real
+#' It can be written as text ("Page x of y", "Page x/y" or the Chinese
+#' "di x ye gong y ye" form): then page k must say "Page k of n", where n is the real
 #' number of pages. Or it can be Word PAGE / NUMPAGES fields, the usual SAS ODS
 #' RTF and r2rtf output: Word fills the numbers in when it opens the file, so
 #' they only need to be present on every page. Also reports pages
@@ -20,6 +20,9 @@
 #'   reported too; set `FALSE` for outputs that are meant to have none.
 #' @return A data frame of issues (`check`, `page`, `message`); zero rows when
 #'   everything is fine.
+#' @examples
+#' f <- system.file("extdata", "demo.rtf", package = "rtfqc")
+#' rtf_check_pages(f)
 #' @export
 rtf_check_pages <- function(x, require = TRUE) {
   doc <- .as_doc(x)
@@ -80,6 +83,11 @@ rtf_check_pages <- function(x, require = TRUE) {
 #'   RTF file name without extension) and title / footnote columns (names
 #'   starting with `title` or `footnote`).
 #' @return A data frame of issues (`check`, `page`, `message`).
+#' @examples
+#' f <- system.file("extdata", "demo.rtf", package = "rtfqc")
+#' rtf_check_titles(f,
+#'   titles = c("Table 14.1.1 Demographic Characteristics", "Safety Population"),
+#'   footnotes = c("Note: Percentages are based on N.", "Source: ADSL"))
 #' @export
 rtf_check_titles <- function(x, titles = NULL, footnotes = NULL, toc = NULL) {
   doc <- .as_doc(x)
@@ -149,6 +157,10 @@ tools_title <- function(x) paste0(toupper(substr(x, 1, 1)), substr(x, 2, nchar(x
 #' @param qc Optional QC data (see [rtf_compare()]); when given, value
 #'   differences are added to the issues.
 #' @return A data frame of issues with columns `check`, `page`, `message`.
+#' @examples
+#' f <- system.file("extdata", "demo.rtf", package = "rtfqc")
+#' qc <- data.frame(COL1 = c("Age (years)", "  n"), COL2 = c("", "30"), COL3 = c("", "31"))
+#' rtf_check(f, qc = qc, titles = "Table 14.1.1 Demographic Characteristics")
 #' @export
 rtf_check <- function(x, qc = NULL, titles = NULL, footnotes = NULL, toc = NULL) {
   doc <- .as_doc(x)

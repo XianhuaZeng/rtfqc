@@ -18,10 +18,14 @@ A data frame of issues (`check`, `page`, `message`); zero rows when
 }
 \description{
 Looks for the page number in the header, footer and body of every page.
-It can be written as text ("Page x of y", "Page x/y" or Chinese
-the Chinese "di x ye gong y ye" form): then page k must say "Page k of n", where n is the real
+It can be written as text ("Page x of y", "Page x/y" or the Chinese
+"di x ye gong y ye" form): then page k must say "Page k of n", where n is the real
 number of pages. Or it can be Word PAGE / NUMPAGES fields, the usual SAS ODS
 RTF and r2rtf output: Word fills the numbers in when it opens the file, so
 they only need to be present on every page. Also reports pages
 that have a header but no body content.
+}
+\examples{
+f <- system.file("extdata", "demo.rtf", package = "rtfqc")
+rtf_check_pages(f)
 }

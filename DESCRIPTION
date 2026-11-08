@@ -1,12 +1,11 @@
 Package: rtfqc
 Title: Read Clinical RTF Outputs and Check Them Against QC Data
-Version: 0.1.13
+Version: 0.1.14
 Authors@R:
-    c(person("Xianhua", "Zeng", role = c("aut", "cre"), email = "huazizeng@gmail.com"),
-      person("Claude", role = "aut"))
-Description: Reads RTF tables, listings and figures produced for clinical
-    study reports (for example by SAS ODS RTF or r2rtf) directly, without
-    Word, LibreOffice or Pandoc. Splits them into pages with titles,
+    person("Xianhua", "Zeng", role = c("aut", "cre"), email = "huazizeng@gmail.com")
+Description: Reads RTF (Rich Text Format) tables, listings and figures
+    produced for clinical study reports (for example by 'SAS' ODS RTF or
+    'r2rtf') directly, without 'Word', 'LibreOffice' or 'Pandoc'. Splits them into pages with titles,
     headers, table body and footnotes, rebuilds the body table as a data
     frame, and compares it cell by cell with an independently programmed
     QC dataset, classifying each difference as a value difference,

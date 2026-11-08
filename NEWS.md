@@ -1,3 +1,9 @@
+# rtfqc 0.1.14
+
+* Preparing the first CRAN submission: examples for every exported function
+  (files are only written to `tempdir()`), software names quoted in
+  DESCRIPTION.
+
 # rtfqc 0.1.13
 
 * Leading spaces must now match as well: indentation (`  Female` vs `Female`)
